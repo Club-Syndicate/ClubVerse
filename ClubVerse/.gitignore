@@ -1,3 +1,6 @@
+# modules
+node_modules/
+
 # Miscellaneous
 *.class
 *.log

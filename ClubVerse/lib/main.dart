@@ -26,7 +26,6 @@ void main() async {
 
   runApp(const ClubPortalApp());
 }
-
 class ClubPortalApp extends StatelessWidget {
   const ClubPortalApp({super.key});
 

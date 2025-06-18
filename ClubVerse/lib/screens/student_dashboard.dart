@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../theme/app_theme.dart';
+import 'dart:ui';
 
 class StudentDashboard extends StatefulWidget {
   const StudentDashboard({super.key});
@@ -15,6 +16,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   String _studentName = '';
   bool _isLoading = true;
+  bool _isWelcomeCardHovered = false;
 
   @override
   void initState() {
@@ -198,94 +200,165 @@ class _StudentDashboardState extends State<StudentDashboard> {
   }
 
   Widget _buildWelcomeCard() {
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [Color(0xFF7C4DFF), Color(0xFF9E7DFF)],
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.purple.withOpacity(0.3),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              const CircleAvatar(
-                radius: 25,
-                backgroundColor: Colors.white,
-                child: Icon(
-                  Icons.person,
-                  size: 30,
-                  color: Color(0xFF7C4DFF),
-                ),
+    // Themed, visible, and on-brand welcome card
+    return Center(
+      child: MouseRegion(
+        onEnter: (_) => setState(() => _isWelcomeCardHovered = true),
+        onExit: (_) => setState(() => _isWelcomeCardHovered = false),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 250),
+          curve: Curves.easeOutCubic,
+          transform: _isWelcomeCardHovered
+              ? (Matrix4.identity()..scale(1.04))
+              : Matrix4.identity(),
+          width: 480,
+          constraints: const BoxConstraints(maxWidth: 520, minWidth: 320),
+          padding: const EdgeInsets.all(28),
+          decoration: BoxDecoration(
+            gradient: AppTheme.primaryGradient,
+            borderRadius: BorderRadius.circular(22),
+            border: Border.all(
+              color: Colors.white.withOpacity(_isWelcomeCardHovered ? 0.35 : 0.22),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: AppTheme.primaryColor.withOpacity(_isWelcomeCardHovered ? 0.18 : 0.10),
+                blurRadius: _isWelcomeCardHovered ? 32 : 18,
+                offset: const Offset(0, 8),
               ),
-              const SizedBox(width: 15),
-              Column(
+              BoxShadow(
+                color: Colors.white.withOpacity(0.18),
+                blurRadius: 40,
+                spreadRadius: 2,
+                offset: const Offset(0, 0),
+              ),
+            ],
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(22),
+            child: BackdropFilter(
+              filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
+              child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(
-                    'Hello, ${_studentName}',
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ),
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Stack(
+                        children: [
+                          const CircleAvatar(
+                            radius: 32,
+                            backgroundColor: Colors.white,
+                            child: Icon(
+                              Icons.person,
+                              size: 36,
+                              color: AppTheme.primaryColor,
+                            ),
+                          ),
+                          Positioned(
+                            right: 0,
+                            bottom: 0,
+                            child: Container(
+                              decoration: BoxDecoration(
+                                color: AppTheme.secondaryColor,
+                                shape: BoxShape.circle,
+                                border: Border.all(color: Colors.white, width: 2),
+                              ),
+                              padding: const EdgeInsets.all(4),
+                              child: const Icon(Icons.emoji_emotions, size: 16, color: Colors.white),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(width: 22),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              'Hello, ${_studentName}',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 26,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.2,
+                                shadows: [
+                                  Shadow(
+                                    color: Colors.black26,
+                                    blurRadius: 4,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            const Text(
+                              'Welcome back to ClubVerse',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 16,
+                                fontWeight: FontWeight.w500,
+                                shadows: [
+                                  Shadow(
+                                    color: Colors.black26,
+                                    blurRadius: 4,
+                                    offset: Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  const Text(
-                    'Welcome back to ClubVerse',
-                    style: TextStyle(color: Colors.white70),
+                  const SizedBox(height: 28),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                    children: [
+                      _buildStatCard('Clubs', '3', Icons.group),
+                      _buildStatCard('Events', '5', Icons.event),
+                      _buildStatCard('Tasks', '2', Icons.task),
+                    ],
                   ),
                 ],
               ),
-            ],
+            ),
           ),
-          const SizedBox(height: 20),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: [
-              _buildStatCard('Clubs', '3', Icons.group),
-              _buildStatCard('Events', '5', Icons.event),
-              _buildStatCard('Tasks', '2', Icons.task),
-            ],
-          ),
-        ],
+        ),
       ),
     );
   }
 
   Widget _buildStatCard(String title, String count, IconData icon) {
+    // Simple, performant stat card
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 18),
       decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.2),
-        borderRadius: BorderRadius.circular(12),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(color: AppTheme.primaryColor.withOpacity(0.12)),
       ),
       child: Column(
         children: [
-          Icon(icon, color: Colors.white),
-          const SizedBox(height: 5),
+          Icon(icon, color: AppTheme.primaryColor, size: 28),
+          const SizedBox(height: 6),
           Text(
             count,
             style: const TextStyle(
-              color: Colors.white,
+              color: AppTheme.primaryColor,
               fontSize: 18,
               fontWeight: FontWeight.bold,
             ),
           ),
           Text(
             title,
-            style: const TextStyle(color: Colors.white70),
+            style: const TextStyle(
+              color: AppTheme.primaryColor,
+              fontWeight: FontWeight.w500,
+              fontSize: 14,
+            ),
           ),
         ],
       ),
@@ -313,7 +386,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
   }
 
   Widget _buildUpcomingEvents() {
-    // Placeholder for upcoming events
+    // TODO: Implement dynamic data fetching for upcoming events instead of placeholder
     return SizedBox(
       height: 180,
       child: ListView.builder(
@@ -391,7 +464,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
   }
 
   Widget _buildRegisteredClubs() {
-    // Placeholder for registered clubs
+    // TODO: Implement dynamic data fetching for registered clubs instead of placeholder
     return SizedBox(
       height: 120,
       child: ListView.builder(
@@ -457,7 +530,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
   }
 
   Widget _buildAnnouncements() {
-    // Placeholder for announcements
+    // TODO: Implement dynamic data fetching for announcements instead of placeholder
     return Container(
       decoration: BoxDecoration(
         color: Colors.white,
@@ -494,7 +567,7 @@ class _StudentDashboardState extends State<StudentDashboard> {
   }
 
   Widget _buildExploreClubs() {
-    // Placeholder for explore clubs
+    // TODO: Implement dynamic data fetching for explore clubs instead of placeholder
     final clubCategories = [
       {'name': 'Technology', 'icon': Icons.computer},
       {'name': 'Arts', 'icon': Icons.palette},

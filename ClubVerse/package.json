@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "fastmcp": "^3.4.0",
+    "task-master-ai": "^0.17.1"
+  }
+}
