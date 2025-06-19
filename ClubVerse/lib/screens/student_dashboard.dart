@@ -200,13 +200,13 @@ class _StudentDashboardState extends State<StudentDashboard> {
   }
 
   Widget _buildWelcomeCard() {
-    // Themed, visible, and on-brand welcome card
+    // Themed, visible, on-brand, and performant welcome card (purple gradient)
     return Center(
       child: MouseRegion(
         onEnter: (_) => setState(() => _isWelcomeCardHovered = true),
         onExit: (_) => setState(() => _isWelcomeCardHovered = false),
         child: AnimatedContainer(
-          duration: const Duration(milliseconds: 250),
+          duration: const Duration(milliseconds: 200),
           curve: Curves.easeOutCubic,
           transform: _isWelcomeCardHovered
               ? (Matrix4.identity()..scale(1.04))
@@ -223,108 +223,82 @@ class _StudentDashboardState extends State<StudentDashboard> {
             ),
             boxShadow: [
               BoxShadow(
-                color: AppTheme.primaryColor.withOpacity(_isWelcomeCardHovered ? 0.18 : 0.10),
-                blurRadius: _isWelcomeCardHovered ? 32 : 18,
+                color: AppTheme.primaryColor.withOpacity(_isWelcomeCardHovered ? 0.13 : 0.09),
+                blurRadius: _isWelcomeCardHovered ? 22 : 14,
                 offset: const Offset(0, 8),
-              ),
-              BoxShadow(
-                color: Colors.white.withOpacity(0.18),
-                blurRadius: 40,
-                spreadRadius: 2,
-                offset: const Offset(0, 0),
               ),
             ],
           ),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(22),
-            child: BackdropFilter(
-              filter: ImageFilter.blur(sigmaX: 8, sigmaY: 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
-                  Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
+                  Stack(
                     children: [
-                      Stack(
-                        children: [
-                          const CircleAvatar(
-                            radius: 32,
-                            backgroundColor: Colors.white,
-                            child: Icon(
-                              Icons.person,
-                              size: 36,
-                              color: AppTheme.primaryColor,
-                            ),
-                          ),
-                          Positioned(
-                            right: 0,
-                            bottom: 0,
-                            child: Container(
-                              decoration: BoxDecoration(
-                                color: AppTheme.secondaryColor,
-                                shape: BoxShape.circle,
-                                border: Border.all(color: Colors.white, width: 2),
-                              ),
-                              padding: const EdgeInsets.all(4),
-                              child: const Icon(Icons.emoji_emotions, size: 16, color: Colors.white),
-                            ),
-                          ),
-                        ],
+                      const CircleAvatar(
+                        radius: 32,
+                        backgroundColor: Colors.white,
+                        child: Icon(
+                          Icons.person,
+                          size: 36,
+                          color: AppTheme.primaryColor,
+                        ),
                       ),
-                      const SizedBox(width: 22),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              'Hello, ${_studentName}',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 26,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 0.2,
-                                shadows: [
-                                  Shadow(
-                                    color: Colors.black26,
-                                    blurRadius: 4,
-                                    offset: Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            const Text(
-                              'Welcome back to ClubVerse',
-                              style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 16,
-                                fontWeight: FontWeight.w500,
-                                shadows: [
-                                  Shadow(
-                                    color: Colors.black26,
-                                    blurRadius: 4,
-                                    offset: Offset(0, 2),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
+                      Positioned(
+                        right: 0,
+                        bottom: 0,
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: AppTheme.secondaryColor,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 2),
+                          ),
+                          padding: const EdgeInsets.all(4),
+                          child: const Icon(Icons.emoji_emotions, size: 16, color: Colors.white),
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 28),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: [
-                      _buildStatCard('Clubs', '3', Icons.group),
-                      _buildStatCard('Events', '5', Icons.event),
-                      _buildStatCard('Tasks', '2', Icons.task),
-                    ],
+                  const SizedBox(width: 22),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Hello, ${_studentName}',
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.2,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        const Text(
+                          'Welcome back to ClubVerse',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 16,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
-            ),
+              const SizedBox(height: 28),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  _buildStatCard('Clubs', '3', Icons.group),
+                  _buildStatCard('Events', '5', Icons.event),
+                  _buildStatCard('Tasks', '2', Icons.task),
+                ],
+              ),
+            ],
           ),
         ),
       ),
@@ -332,13 +306,20 @@ class _StudentDashboardState extends State<StudentDashboard> {
   }
 
   Widget _buildStatCard(String title, String count, IconData icon) {
-    // Simple, performant stat card
+    // Stat card: white background, theme color text
     return Container(
       padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 18),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppTheme.primaryColor.withOpacity(0.12)),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.primaryColor.withOpacity(0.08),
+            blurRadius: 12,
+            offset: const Offset(0, 2),
+          ),
+        ],
       ),
       child: Column(
         children: [
