@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../theme/app_theme.dart';
+import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 
 class StudentRegisterScreen extends StatefulWidget {
   const StudentRegisterScreen({super.key});
@@ -23,6 +25,7 @@ class _StudentRegisterScreenState extends State<StudentRegisterScreen> {
 
   String? _error;
   bool _isLoading = false;
+  File? _profileImage;
 
   @override
   void initState() {
@@ -183,6 +186,16 @@ class _StudentRegisterScreenState extends State<StudentRegisterScreen> {
     }
   }
 
+  Future<void> _pickProfileImage() async {
+    final picker = ImagePicker();
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+    if (pickedFile != null) {
+      setState(() {
+        _profileImage = File(pickedFile.path);
+      });
+    }
+  }
+
   Widget _buildInput(String label, TextEditingController controller,
       {bool obscure = false, IconData? prefixIcon}) {
     return Container(
@@ -214,200 +227,143 @@ class _StudentRegisterScreenState extends State<StudentRegisterScreen> {
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryColor))
-          : Row(
-              children: [
-                // Left side with registration form
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        // Logo
-                        const Text(
-                          'UNICLUB',
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            color: Color(0xFF7C4DFF),
-                          ),
-                        ),
-                        const SizedBox(height: 40),
-                        // Registration title
-                        const Text(
-                          'STUDENT REGISTRATION',
-                          style: TextStyle(
-                            fontSize: 24,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        // Form fields in a scrollable container
-                        Expanded(
-                          child: SingleChildScrollView(
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // College selection
-                                Container(
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFF5F5FF),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                                  child: DropdownButtonFormField<Map<String, dynamic>>(
-                                    value: _selectedCollege,
-                                    onChanged: (val) => setState(() => _selectedCollege = val),
-                                    items: _colleges
-                                        .map((college) => DropdownMenuItem(
-                                              value: college,
-                                              child: Text(college['name']),
-                                            ))
-                                        .toList(),
-                                    decoration: const InputDecoration(
-                                      hintText: 'Select College',
-                                      border: InputBorder.none,
-                                      contentPadding: EdgeInsets.symmetric(vertical: 16),
-                                    ),
-                                    icon: const Icon(Icons.school_outlined),
-                                  ),
-                                ),
-                                const SizedBox(height: 16),
-                                _buildInput('College Email', _email, prefixIcon: Icons.email_outlined),
-                                const SizedBox(height: 16),
-                                _buildInput('Password', _password, obscure: true, prefixIcon: Icons.lock_outline),
-                                const SizedBox(height: 16),
-                                _buildInput('Full Name', _name, prefixIcon: Icons.person_outline),
-                                const SizedBox(height: 16),
-                                _buildInput('Student ID', _studentId, prefixIcon: Icons.badge_outlined),
-                                const SizedBox(height: 16),
-                                _buildInput('Department / Course', _department, prefixIcon: Icons.school_outlined),
-                                const SizedBox(height: 16),
-                                // Year selection
-                                Container(
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFFF5F5FF),
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                                  child: DropdownButtonFormField<int>(
-                                    value: _year,
-                                    onChanged: (val) => setState(() => _year = val!),
-                                    items: List.generate(
-                                        4,
-                                        (i) => DropdownMenuItem(
-                                            value: i + 1, child: Text('${i + 1} Year'))),
-                                    decoration: const InputDecoration(
-                                      hintText: 'Year of Study',
-                                      border: InputBorder.none,
-                                      contentPadding: EdgeInsets.symmetric(vertical: 16),
-                                    ),
-                                    icon: const Icon(Icons.calendar_today_outlined),
-                                  ),
-                                ),
-                                const SizedBox(height: 24),
-                                // Register button
-                                Center(
-                                  child: SizedBox(
-                                    width: 150,
-                                    child: ElevatedButton(
-                                      onPressed: _isLoading ? null : _registerStudent,
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: const Color(0xFF7C4DFF),
-                                        foregroundColor: Colors.white,
-                                        padding: const EdgeInsets.symmetric(vertical: 16),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(12),
-                                        ),
-                                        disabledBackgroundColor: AppTheme.primaryColor.withOpacity(0.6),
-                                      ),
-                                      child: _isLoading
-                                          ? const SizedBox(
-                                              height: 20,
-                                              width: 20,
-                                              child: CircularProgressIndicator(
-                                                color: Colors.white,
-                                                strokeWidth: 2,
-                                              ),
-                                            )
-                                          : const Text('Register'),
-                                    ),
-                                  ),
-                                ),
-                                if (_error != null)
-                                  Padding(
-                                    padding: const EdgeInsets.only(top: 16),
-                                    child: Center(
-                                      child: Text(
-                                        _error!,
-                                        style: const TextStyle(color: AppTheme.errorColor, fontSize: 14),
-                                        textAlign: TextAlign.center,
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ],
+          : SingleChildScrollView(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  // Logo
+                  const Text(
+                    'UNICLUB',
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF7C4DFF),
                     ),
                   ),
-                ),
-                // Right side with image and text
-                Expanded(
-                  child: Container(
-                    color: const Color(0xFF7C4DFF),
-                    child: Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(32.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Container(
-                              padding: const EdgeInsets.all(24),
-                              decoration: BoxDecoration(
-                                color: Colors.white.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(24),
-                              ),
-                              child: Column(
-                                children: [
-                                  const Text(
-                                    'JOIN YOUR\nCOLLEGE\nCOMMUNITY!',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 24,
-                                      fontWeight: FontWeight.bold,
-                                      height: 1.5,
-                                    ),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                  const SizedBox(height: 24),
-                                  // Placeholder for student image
-                                  Container(
-                                    height: 200,
-                                    width: 200,
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.3),
-                                      borderRadius: BorderRadius.circular(16),
-                                    ),
-                                    child: const Center(
-                                      child: Icon(
-                                        Icons.school,
-                                        size: 100,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
+                  const SizedBox(height: 40),
+                  // Registration title
+                  const Text(
+                    'STUDENT REGISTRATION',
+                    style: TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  // College selection
+                  Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF5F5FF),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: DropdownButtonFormField<Map<String, dynamic>>(
+                      value: _selectedCollege,
+                      onChanged: (val) => setState(() => _selectedCollege = val),
+                      items: _colleges
+                          .map((college) => DropdownMenuItem(
+                                value: college,
+                                child: Text(college['name']),
+                              ))
+                          .toList(),
+                      decoration: const InputDecoration(
+                        hintText: 'Select College',
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      icon: const Icon(Icons.school_outlined),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  _buildInput('College Email', _email, prefixIcon: Icons.email_outlined),
+                  const SizedBox(height: 16),
+                  _buildInput('Password', _password, obscure: true, prefixIcon: Icons.lock_outline),
+                  const SizedBox(height: 16),
+                  _buildInput('Full Name', _name, prefixIcon: Icons.person_outline),
+                  const SizedBox(height: 16),
+                  _buildInput('Student ID', _studentId, prefixIcon: Icons.badge_outlined),
+                  const SizedBox(height: 16),
+                  _buildInput('Department / Course', _department, prefixIcon: Icons.school_outlined),
+                  const SizedBox(height: 16),
+                  // Year selection
+                  Container(
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF5F5FF),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: DropdownButtonFormField<int>(
+                      value: _year,
+                      onChanged: (val) => setState(() => _year = val!),
+                      items: List.generate(
+                          4,
+                          (i) => DropdownMenuItem(
+                              value: i + 1, child: Text('${i + 1} Year'))),
+                      decoration: const InputDecoration(
+                        hintText: 'Year of Study',
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.symmetric(vertical: 16),
+                      ),
+                      icon: const Icon(Icons.calendar_today_outlined),
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  // Profile Image Picker
+                  GestureDetector(
+                    onTap: _pickProfileImage,
+                    child: CircleAvatar(
+                      radius: 48,
+                      backgroundColor: Colors.grey[200],
+                      backgroundImage: _profileImage != null ? FileImage(_profileImage!) : null,
+                      child: _profileImage == null
+                          ? const Icon(Icons.camera_alt, size: 36, color: Colors.grey)
+                          : null,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  const Text('Tap to select a profile image'),
+                  // Register button
+                  Center(
+                    child: SizedBox(
+                      width: 150,
+                      child: ElevatedButton(
+                        onPressed: _isLoading ? null : _registerStudent,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF7C4DFF),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 16),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          disabledBackgroundColor: AppTheme.primaryColor.withOpacity(0.6),
                         ),
+                        child: _isLoading
+                            ? const SizedBox(
+                                height: 20,
+                                width: 20,
+                                child: CircularProgressIndicator(
+                                  color: Colors.white,
+                                  strokeWidth: 2,
+                                ),
+                              )
+                            : const Text('Register'),
                       ),
                     ),
                   ),
-                ),
-              ],
+                  if (_error != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 16),
+                      child: Center(
+                        child: Text(
+                          _error!,
+                          style: const TextStyle(color: AppTheme.errorColor, fontSize: 14),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
     );
   }
