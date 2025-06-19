@@ -183,3 +183,26 @@ flutter run
 ## License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
+
+## Setup (Flutter & Firebase) -- not required as currently the firebase creds are hardcoded (19/6/2025). Change that before putting the project on open source contribution
+
+1. **Install dependencies:**
+   ```sh
+   flutter pub get
+   ```
+   ## simply setting up flutter via terminal will work and download all the necessary things required that are defined in the directory
+
+2. **Firebase configuration:**
+   - Add your `google-services.json` to `android/app/`.
+   - Add your `GoogleService-Info.plist` to `ios/Runner/`.
+   - These files are not included in the repository for security reasons (see `.gitignore`).
+
+3. **Run the app:**
+   ```sh
+   flutter run
+   ```
+
+## Notes
+- Build outputs and IDE/editor settings are ignored via `.gitignore`.
+- If you use a different Firebase project, update the config files accordingly.
+- Do not commit build outputs or personal config files.

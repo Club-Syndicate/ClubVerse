@@ -46,3 +46,41 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# iOS build outputs
+ios/Flutter/Flutter.framework
+ios/Flutter/Flutter.podspec
+ios/Flutter/Generated.xcconfig
+ios/Flutter/app.flx
+ios/Flutter/app.zip
+ios/Flutter/engine/
+ios/Flutter/flutter_assets/
+ios/ServiceDefinitions.json
+ios/Runner/GeneratedPluginRegistrant.*
+
+# Android build outputs
+android/.gradle/
+android/app/build/
+android/local.properties
+
+# VS Code settings
+.vscode/
+
+# IntelliJ/Android Studio settings
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
+
+# Web build outputs
+web/build/
+
+# Firebase/Google services (uncomment if you want to keep them private)
+# android/app/google-services.json
+# ios/Runner/GoogleService-Info.plist
