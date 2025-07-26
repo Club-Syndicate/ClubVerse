@@ -14,7 +14,7 @@ const db = admin.firestore();
 async function confirmProductionExecution() {
   const rl = readline.createInterface({
     input: process.stdin,
-    output: process.stdout
+    output: process.stdout,
   });
 
   return new Promise((resolve) => {
