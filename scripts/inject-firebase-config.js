@@ -35,8 +35,8 @@ function injectFirebaseConfig() {
 
   // Validate required config
   const requiredKeys = ['apiKey', 'authDomain', 'projectId', 'messagingSenderId', 'appId'];
-  const missingKeys = requiredKeys.filter(key => !firebaseConfig[key]);
-  
+  const missingKeys = requiredKeys.filter((key) => !firebaseConfig[key]);
+
   if (missingKeys.length > 0) {
     console.error('❌ Missing required Firebase config keys:', missingKeys);
     console.error('Please update your .env.local file with the correct Firebase configuration');
@@ -51,7 +51,10 @@ function injectFirebaseConfig() {
   swContent = swContent.replace('{{FIREBASE_AUTH_DOMAIN}}', firebaseConfig.authDomain);
   swContent = swContent.replace('{{FIREBASE_PROJECT_ID}}', firebaseConfig.projectId);
   swContent = swContent.replace('{{FIREBASE_STORAGE_BUCKET}}', firebaseConfig.storageBucket);
-  swContent = swContent.replace('{{FIREBASE_MESSAGING_SENDER_ID}}', firebaseConfig.messagingSenderId);
+  swContent = swContent.replace(
+    '{{FIREBASE_MESSAGING_SENDER_ID}}',
+    firebaseConfig.messagingSenderId,
+  );
   swContent = swContent.replace('{{FIREBASE_APP_ID}}', firebaseConfig.appId);
   swContent = swContent.replace('{{FIREBASE_MEASUREMENT_ID}}', firebaseConfig.measurementId || '');
 
