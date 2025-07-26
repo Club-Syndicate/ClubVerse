@@ -65,9 +65,6 @@ exports.sendEventNotification = functions.firestore
           body: notificationBody,
           icon: '/icons/club-icon.png', // Add your app icon
           badge: '/icons/badge-icon.png', // Add your badge icon
-          click_action: `${
-            functions.config().app.domain || 'https://your-app-domain.com'
-          }/events/${eventId}`, // Update with your domain
         },
         data: {
           eventId: eventId,
@@ -78,6 +75,9 @@ exports.sendEventNotification = functions.firestore
           location: eventData.location || '',
           type: 'event_notification',
           timestamp: Date.now().toString(),
+          clickUrl: `${
+            functions.config().app.domain || 'https://your-app-domain.com'
+          }/events/${eventId}`, // URL for service worker to handle
         },
       };
 

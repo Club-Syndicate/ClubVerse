@@ -65,7 +65,11 @@ self.addEventListener('notificationclick', (event) => {
 
   let urlToOpen = '/';
 
-  if (data?.eventId) {
+  // Use clickUrl from data payload if available (new format)
+  if (data?.clickUrl) {
+    urlToOpen = data.clickUrl;
+  } else if (data?.eventId) {
+    // Fallback for legacy format
     urlToOpen = `/events/${data.eventId}`;
   } else if (data?.clubId) {
     urlToOpen = `/clubs/${data.clubId}`;
@@ -86,7 +90,10 @@ self.addEventListener('notificationclick', (event) => {
         }
 
         if (clients.openWindow) {
-          const fullUrl = `${self.location.origin}${urlToOpen}?utm_source=notification&type=event_notification`;
+          // For external URLs, use them as-is; for relative URLs, add origin
+          const fullUrl = data?.clickUrl?.startsWith('http') 
+            ? data.clickUrl 
+            : `${self.location.origin}${urlToOpen}?utm_source=notification&type=event_notification`;
           return clients.openWindow(fullUrl);
         }
       })

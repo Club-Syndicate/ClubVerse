@@ -55,6 +55,15 @@ if [ ! -f ".env.local" ]; then
     echo "⚠️  Please update .env.local with your Firebase configuration"
 fi
 
+# Generate Firebase service worker from template
+echo "🔧 Generating Firebase service worker..."
+if [ -f ".env.local" ]; then
+    npm run build:firebase
+    echo "✅ Firebase service worker generated"
+else
+    echo "⚠️  Please set up .env.local first, then run: npm run build:firebase"
+fi
+
 # Set up Firebase hosting (optional)
 echo "🌐 Setting up Firebase hosting configuration..."
 

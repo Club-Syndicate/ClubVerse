@@ -4,9 +4,23 @@
 const fs = require('fs');
 const path = require('path');
 
+// Try to load dotenv if available, otherwise rely on process.env
+try {
+  require('dotenv').config({ path: path.join(__dirname, '../.env.local') });
+} catch (e) {
+  // dotenv not available, relying on existing process.env
+  console.log('💡 Using existing environment variables (dotenv not found)');
+}
+
 function injectFirebaseConfig() {
-  const swPath = path.join(__dirname, '../public/firebase-messaging-sw.js');
-  const envPath = path.join(__dirname, '../.env.local');
+  const templatePath = path.join(__dirname, '../public/firebase-messaging-sw.template.js');
+  const outputPath = path.join(__dirname, '../public/firebase-messaging-sw.js');
+
+  // Check if template exists
+  if (!fs.existsSync(templatePath)) {
+    console.error('❌ Template file not found:', templatePath);
+    return;
+  }
 
   // Read environment variables
   const firebaseConfig = {
@@ -19,21 +33,36 @@ function injectFirebaseConfig() {
     measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
   };
 
-  // Read the service worker file
-  let swContent = fs.readFileSync(swPath, 'utf8');
+  // Validate required config
+  const requiredKeys = ['apiKey', 'authDomain', 'projectId', 'messagingSenderId', 'appId'];
+  const missingKeys = requiredKeys.filter(key => !firebaseConfig[key]);
+  
+  if (missingKeys.length > 0) {
+    console.error('❌ Missing required Firebase config keys:', missingKeys);
+    console.error('Please update your .env.local file with the correct Firebase configuration');
+    return;
+  }
 
-  // Replace the config object
-  const configString = `const firebaseConfig = ${JSON.stringify(firebaseConfig, null, 2)};`;
+  // Read the template file
+  let swContent = fs.readFileSync(templatePath, 'utf8');
 
-  swContent = swContent.replace(/const firebaseConfig = {[\s\S]*?};/, configString);
+  // Replace template placeholders
+  swContent = swContent.replace('{{FIREBASE_API_KEY}}', firebaseConfig.apiKey);
+  swContent = swContent.replace('{{FIREBASE_AUTH_DOMAIN}}', firebaseConfig.authDomain);
+  swContent = swContent.replace('{{FIREBASE_PROJECT_ID}}', firebaseConfig.projectId);
+  swContent = swContent.replace('{{FIREBASE_STORAGE_BUCKET}}', firebaseConfig.storageBucket);
+  swContent = swContent.replace('{{FIREBASE_MESSAGING_SENDER_ID}}', firebaseConfig.messagingSenderId);
+  swContent = swContent.replace('{{FIREBASE_APP_ID}}', firebaseConfig.appId);
+  swContent = swContent.replace('{{FIREBASE_MEASUREMENT_ID}}', firebaseConfig.measurementId || '');
 
-  // Write back to file
-  fs.writeFileSync(swPath, swContent);
+  // Write to output file
+  fs.writeFileSync(outputPath, swContent);
 
-  console.log('✅ Firebase config injected into service worker');
+  console.log('✅ Firebase service worker generated successfully');
+  console.log(`📝 Generated: ${outputPath}`);
 }
 
-// Run if this script is executed directly
+// Run if called directly
 if (require.main === module) {
   injectFirebaseConfig();
 }
