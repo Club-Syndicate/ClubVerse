@@ -29,7 +29,7 @@ ClubVerse is a comprehensive, all-in-one platform designed to streamline club ma
 - **Club Core System**: Functionality for club creation, member management, role assignments (Admin, Leader, Member), and categorized group chats.
 - **Real-time Communication**: Integrated chat with permissions, channel privacy, and media sharing.
 - **Event Management**: Create and manage club events with an RSVP system and calendar integrations.
-- **Notifications**: Push notifications and email digests to keep users informed. _(Planned)_
+- **🔔 Event Notifications**: Firebase Cloud Functions powered push notifications for event creation and updates _(Implemented)_
 - **Admin & Analytics**: Dashboards for tracking user activity, engagement metrics, and generating reports. _(Planned)_
 - **Discovery & Recommendation**: An intelligent system to help students find clubs based on their interests. _(Planned)_
 
@@ -122,10 +122,11 @@ _Help students and colleges everywhere by contributing to a platform that matter
 - **Version Control**: Git
 - **Deployment**: Vercel
 
-### 🔧 **Planned Future Enhancements**
+### 🔧 **Current Implementation & Future Enhancements**
 
-- **Authentication**: Firebase Authentication _(Planned)_
-- **Database**: Firebase Firestore / PostgreSQL _(Planned)_
+- **🔔 Event Notifications**: Firebase Cloud Functions with FCM _(Implemented)_
+- **Authentication**: Firebase Authentication _(In Progress)_
+- **Database**: Firebase Firestore _(In Progress)_
 - **Real-time Chat**: WebSocket-based solution _(Planned)_
 - **Backend API**: FastAPI for analytics and complex queries _(Planned)_
 - **Search**: Elasticsearch for powerful search and filtering _(Planned)_
@@ -148,13 +149,31 @@ ClubVerse/
 │   └── page.tsx                # Main landing page
 ├── components/                 # Shared React components
 │   ├── ui/                     # Core UI components (shadcn/ui)
+│   ├── notifications/          # Notification components
 │   ├── navbar.tsx              # Application navbar
 │   └── theme-provider.tsx      # Theme management
+├── functions/                  # 🔔 Firebase Cloud Functions
+│   ├── index.js                # Event notification sender
+│   ├── package.json            # Functions dependencies
+│   ├── test/                   # Function tests
+│   └── README.md               # Functions documentation
 ├── hooks/                      # Custom React hooks
 │   └── useAuth.tsx             # Authentication logic
 ├── lib/                        # Utility functions
+│   ├── firebase/               # 🔔 Firebase configuration
+│   │   ├── config.ts           # Firebase SDK setup
+│   │   └── notifications.ts    # Notification service
 │   └── utils.ts
 ├── public/                     # Static assets (images, logos)
+│   └── firebase-messaging-sw.js # 🔔 Service worker for notifications
+├── scripts/                    # Setup and deployment scripts
+│   └── setup-firebase.sh       # 🔔 Firebase setup automation
+├── firebase.json               # 🔔 Firebase project configuration
+├── firestore.rules            # 🔔 Database security rules
+├── firestore.indexes.json     # 🔔 Database indexes
+├── .firebaserc                # 🔔 Firebase project settings
+├── .env.example               # Environment variables template
+├── CLOUD_FUNCTIONS_IMPLEMENTATION.md # 🔔 Detailed implementation docs
 ├── .gitignore
 ├── next.config.mjs
 ├── package.json
@@ -170,6 +189,34 @@ ClubVerse/
 - **`app/page.tsx`**: The public-facing landing page. It also handles redirecting logged-in users to their correct dashboard.
 - **`components/ui/`**: Contains all the reusable, low-level UI components from `shadcn/ui`, forming the design system.
 - **`hooks/useAuth.tsx`**: A critical file that manages user authentication state across the application. All authentication logic currently resides here.
+- **🔔 `functions/`**: Firebase Cloud Functions for event notifications and backend services.
+- **🔔 `lib/firebase/`**: Firebase SDK configuration and notification services for the frontend.
+
+### 🔔 **Event Notification System**
+
+ClubVerse now includes a **complete Firebase Cloud Functions implementation** for event notifications:
+
+**✅ Features Implemented:**
+
+- **Automatic Notifications**: Sends push notifications when events are created or updated
+- **Smart Targeting**: Notifies club members, college-wide audiences, and subscribed users
+- **Rich Notifications**: Includes event details, click actions, and custom icons
+- **Audit Trail**: Comprehensive logging and error tracking
+- **Security**: Firestore security rules and authenticated topic management
+
+**🚀 Quick Setup:**
+
+```bash
+# Install Firebase CLI
+npm install -g firebase-tools
+
+# Set up Firebase Cloud Functions
+chmod +x scripts/setup-firebase.sh
+./scripts/setup-firebase.sh
+```
+
+**📖 Documentation:**  
+For detailed implementation details, see [CLOUD_FUNCTIONS_IMPLEMENTATION.md](CLOUD_FUNCTIONS_IMPLEMENTATION.md)
 
 ---
 
@@ -188,8 +235,7 @@ Here are some Figma design ideas for the login page:
 </tr>
 </table>
 
-=======
----
+## =======
 
 ## 🚀 **Quick Start**
 
