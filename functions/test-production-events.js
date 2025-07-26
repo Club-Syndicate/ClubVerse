@@ -2,10 +2,18 @@
 const admin = require('firebase-admin');
 const readline = require('readline');
 
+// Validate required environment variables
+const projectId = process.env.GCLOUD_PROJECT || process.env.FIREBASE_PROJECT_ID;
+if (!projectId) {
+  console.error(
+    '❌ FIREBASE_PROJECT_ID environment variable not set. Cannot connect to production.',
+  );
+  process.exit(1);
+}
+
 // Initialize for PRODUCTION (not emulator)
 admin.initializeApp({
-  projectId:
-    process.env.GCLOUD_PROJECT || process.env.FIREBASE_PROJECT_ID || 'your-production-project-id',
+  projectId,
   credential: admin.credential.applicationDefault(),
 });
 

@@ -59,6 +59,13 @@ exports.sendEventNotification = functions.firestore
       }
 
       // Build notification payload
+      const domain = functions.config().app?.domain;
+      if (!domain) {
+        console.warn(
+          `Function config 'app.domain' is not set. clickUrl will not be added to notifications.`,
+        );
+      }
+
       const payload = {
         notification: {
           title: notificationTitle,
@@ -75,9 +82,7 @@ exports.sendEventNotification = functions.firestore
           location: eventData.location || '',
           type: 'event_notification',
           timestamp: Date.now().toString(),
-          clickUrl: `${
-            functions.config().app.domain || 'https://your-app-domain.com'
-          }/events/${eventId}`, // URL for service worker to handle
+          ...(domain && { clickUrl: `${domain}/events/${eventId}` }),
         },
       };
 
@@ -203,7 +208,11 @@ exports.sendEventNotification = functions.firestore
           .collection('notification_errors')
           .add({
             eventId: context.params.eventId,
-            errors: errors.map((e) => ({ message: e.message, stack: e.stack })),
+            errors: errors.map((e) => ({ 
+              message: e.message, 
+              stack: e.stack, 
+              code: e.code 
+            })),
             timestamp: admin.firestore.FieldValue.serverTimestamp(),
             context: 'partial_notification_failure',
           });
@@ -218,6 +227,7 @@ exports.sendEventNotification = functions.firestore
         eventId: context.params.eventId,
         error: error.message,
         stack: error.stack,
+        code: error.code,
         timestamp: admin.firestore.FieldValue.serverTimestamp(),
       });
 
@@ -250,8 +260,8 @@ async function getUserTokens(userIds) {
   try {
     const tokens = [];
 
-    // Get user documents in batches (Firestore limit is 10 for 'in' queries)
-    const batchSize = 10;
+    // Get user documents in batches (Firestore limit is 30 for 'in' queries)
+    const batchSize = 30; // Firestore 'in' query limit is 30
     for (let i = 0; i < userIds.length; i += batchSize) {
       const batchUserIds = userIds.slice(i, i + batchSize);
       const userQuery = await admin
