@@ -1,0 +1,75 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users collection - users can read/write their own data
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      allow read: if request.auth != null && 
+                     (resource.data.role in ['college_admin', 'club_admin', 'super_admin'] ||
+                      get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['college_admin', 'club_admin', 'super_admin']);
+    }
+
+    // Events collection - read by authenticated users, write by admins
+    match /events/{eventId} {
+      allow read: if request.auth != null;
+      allow create, update: if request.auth != null && 
+                               (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['club_admin', 'college_admin', 'super_admin'] ||
+                                isClubMember(request.auth.uid, resource.data.clubId));
+      allow delete: if request.auth != null && 
+                       get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['club_admin', 'college_admin', 'super_admin'];
+    }
+
+    // Clubs collection - read by all, write by admins
+    match /clubs/{clubId} {
+      allow read: if request.auth != null;
+      allow create, update, delete: if request.auth != null && 
+                                       get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['college_admin', 'super_admin'];
+    }
+
+    // Colleges collection - read by all, write by super admin
+    match /colleges/{collegeId} {
+      allow read: if request.auth != null;
+      allow create, update, delete: if request.auth != null && 
+                                       get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'super_admin';
+    }
+
+    // Notifications collection - read only for users, write only by functions
+    match /notifications/{notificationId} {
+      allow read: if request.auth != null;
+      allow write: if false; // Only Cloud Functions can write
+    }
+
+    // Notification errors collection - read only by admins
+    match /notification_errors/{errorId} {
+      allow read: if request.auth != null && 
+                     get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['college_admin', 'super_admin'];
+      allow write: if false; // Only Cloud Functions can write
+    }
+
+    // Club memberships collection
+    match /club_memberships/{membershipId} {
+      allow read: if request.auth != null;
+      allow create: if request.auth != null && request.auth.uid == resource.data.userId;
+      allow update, delete: if request.auth != null && 
+                               (request.auth.uid == resource.data.userId ||
+                                get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['club_admin', 'college_admin', 'super_admin']);
+    }
+
+    // Helper function to check if user is a club member
+    function isClubMember(userId, clubId) {
+      return exists(/databases/$(database)/documents/club_memberships/$(userId + '_' + clubId));
+    }
+
+    // Function to check user role
+    function hasRole(role) {
+      return request.auth != null && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == role;
+    }
+
+    // Function to check if user has any admin role
+    function isAdmin() {
+      return request.auth != null && 
+             get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role in ['club_admin', 'college_admin', 'super_admin'];
+    }
+  }
+}
