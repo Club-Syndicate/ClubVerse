@@ -1,20 +1,18 @@
-// Firebase messaging service worker for background notifications
-// This file must be served from the root of your domain
+// Firebase messaging service worker template
+// This file will have config injected during build
 
 import { initializeApp } from 'firebase/app';
 import { getMessaging, onBackgroundMessage } from 'firebase/messaging/sw';
 
-// Firebase configuration - Replace with your actual values
-// Note: Service workers can't access process.env, so values must be hardcoded
-// or injected during build time
+// Firebase configuration - will be replaced during build
 const firebaseConfig = {
-  apiKey: "AIzaSyBxxxxxxxxxxxxxxxxxxxxxxxxxxxxx", // Replace with your actual API key
-  authDomain: "your-project-id.firebaseapp.com", // Replace with your actual auth domain
-  projectId: "your-project-id", // Replace with your actual project ID
-  storageBucket: "your-project-id.appspot.com", // Replace with your actual storage bucket
-  messagingSenderId: "123456789012", // Replace with your actual sender ID
-  appId: "1:123456789012:web:xxxxxxxxxxxxxxxxxx", // Replace with your actual app ID
-  measurementId: "G-XXXXXXXXXX" // Replace with your actual measurement ID (optional)
+  apiKey: "{{FIREBASE_API_KEY}}",
+  authDomain: "{{FIREBASE_AUTH_DOMAIN}}",
+  projectId: "{{FIREBASE_PROJECT_ID}}",
+  storageBucket: "{{FIREBASE_STORAGE_BUCKET}}",
+  messagingSenderId: "{{FIREBASE_MESSAGING_SENDER_ID}}",
+  appId: "{{FIREBASE_APP_ID}}",
+  measurementId: "{{FIREBASE_MEASUREMENT_ID}}"
 };
 
 // Initialize Firebase in service worker
@@ -43,13 +41,12 @@ onBackgroundMessage(messaging, (payload) => {
         icon: '/icons/dismiss-icon.png'
       }
     ],
-    requireInteraction: true, // Keep notification visible until user interacts
-    tag: payload.data?.eventId || 'general', // Group notifications by event
-    renotify: true, // Show notification even if one with same tag exists
+    requireInteraction: true,
+    tag: payload.data?.eventId || 'general',
+    renotify: true,
     timestamp: payload.data?.timestamp ? parseInt(payload.data.timestamp) : Date.now()
   };
 
-  // Show notification
   self.registration.showNotification(notificationTitle, notificationOptions);
 });
 
@@ -63,11 +60,9 @@ self.addEventListener('notificationclick', (event) => {
   const { data } = event.notification;
 
   if (action === 'dismiss') {
-    // Just close the notification
     return;
   }
 
-  // Default action or 'view' action
   let urlToOpen = '/';
 
   if (data?.eventId) {
@@ -76,14 +71,11 @@ self.addEventListener('notificationclick', (event) => {
     urlToOpen = `/clubs/${data.clubId}`;
   }
 
-  // Focus existing window or open new one
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true })
       .then((clientList) => {
-        // Check if app is already open
         for (const client of clientList) {
           if (client.url.includes(self.location.origin) && 'focus' in client) {
-            // Navigate to the event page and focus
             client.postMessage({
               type: 'NOTIFICATION_CLICK',
               url: urlToOpen,
@@ -93,7 +85,6 @@ self.addEventListener('notificationclick', (event) => {
           }
         }
 
-        // If app is not open, open new window
         if (clients.openWindow) {
           const fullUrl = `${self.location.origin}${urlToOpen}?utm_source=notification&type=event_notification`;
           return clients.openWindow(fullUrl);
@@ -102,36 +93,18 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
-// Handle notification close events (for analytics)
+// Handle notification close events
 self.addEventListener('notificationclose', (event) => {
   console.log('[firebase-messaging-sw.js] Notification closed:', event.notification.data);
-  
-  // You can send analytics data here
-  // Example: track notification dismissal
-  const data = event.notification.data;
-  if (data?.eventId) {
-    // Send analytics event for notification dismissal
-    // analytics.track('notification_dismissed', { eventId: data.eventId });
-  }
 });
 
-// Optional: Handle push subscription changes
-self.addEventListener('pushsubscriptionchange', (event) => {
-  console.log('[firebase-messaging-sw.js] Push subscription changed');
-  
-  // Handle subscription renewal here if needed
-  // This is useful for maintaining push subscriptions
-});
-
-// Service worker installation and activation
+// Service worker lifecycle
 self.addEventListener('install', (event) => {
   console.log('[firebase-messaging-sw.js] Service worker installing...');
-  // Skip waiting to activate the new service worker immediately
   self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
   console.log('[firebase-messaging-sw.js] Service worker activating...');
-  // Take control of all clients immediately
   event.waitUntil(self.clients.claim());
 });

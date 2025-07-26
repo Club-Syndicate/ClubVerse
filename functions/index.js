@@ -65,7 +65,9 @@ exports.sendEventNotification = functions.firestore
           body: notificationBody,
           icon: '/icons/club-icon.png', // Add your app icon
           badge: '/icons/badge-icon.png', // Add your badge icon
-          click_action: `https://your-app-domain.com/events/${eventId}`, // Update with your domain
+          click_action: `${
+            functions.config().app.domain || 'https://your-app-domain.com'
+          }/events/${eventId}`, // Update with your domain
         },
         data: {
           eventId: eventId,
@@ -84,35 +86,12 @@ exports.sendEventNotification = functions.firestore
 
       // 1. Send to club-specific topic (all club members)
       const clubTopic = `club_${eventData.clubId}`;
-      notificationPromises.push(
-        admin
-          .messaging()
-          .sendToTopic(clubTopic, payload)
-          .then((response) => {
-            console.log(`Successfully sent notification to club topic ${clubTopic}:`, response);
-          })
-          .catch((error) => {
-            console.error(`Error sending notification to club topic ${clubTopic}:`, error);
-          }),
-      );
+      notificationPromises.push(admin.messaging().sendToTopic(clubTopic, payload));
 
       // 2. If event is college-wide, send to college topic
       if (eventData.isCollegeWide && eventData.collegeId) {
         const collegeTopic = `college_${eventData.collegeId}`;
-        notificationPromises.push(
-          admin
-            .messaging()
-            .sendToTopic(collegeTopic, payload)
-            .then((response) => {
-              console.log(
-                `Successfully sent notification to college topic ${collegeTopic}:`,
-                response,
-              );
-            })
-            .catch((error) => {
-              console.error(`Error sending notification to college topic ${collegeTopic}:`, error);
-            }),
-        );
+        notificationPromises.push(admin.messaging().sendToTopic(collegeTopic, payload));
       }
 
       // 3. Send to individual users who have specifically subscribed to this club's events
@@ -120,41 +99,78 @@ exports.sendEventNotification = functions.firestore
         const userTokens = await getUserTokens(eventData.subscribedUsers);
         if (userTokens.length > 0) {
           notificationPromises.push(
-            admin
-              .messaging()
-              .sendMulticast({
-                tokens: userTokens,
-                notification: payload.notification,
-                data: payload.data,
-              })
-              .then((response) => {
-                console.log(
-                  `Successfully sent notifications to ${response.successCount} subscribed users`,
-                );
-                if (response.failureCount > 0) {
-                  console.log(
-                    `Failed to send to ${response.failureCount} users:`,
-                    response.responses,
-                  );
-                }
-              })
-              .catch((error) => {
-                console.error('Error sending notifications to subscribed users:', error);
-              }),
+            admin.messaging().sendMulticast({
+              tokens: userTokens,
+              notification: payload.notification,
+              data: payload.data,
+            }),
           );
         }
       }
 
-      // Execute all notification sends
-      await Promise.all(notificationPromises);
+      // Execute all notification sends and handle results properly
+      const results = await Promise.allSettled(notificationPromises);
+
+      // Process results and log successes/failures
+      let successCount = 0;
+      let failureCount = 0;
+      const errors = [];
+
+      results.forEach((result, index) => {
+        if (result.status === 'fulfilled') {
+          successCount++;
+          const response = result.value;
+
+          // Log specific success details based on notification type
+          if (index === 0) {
+            console.log(`Successfully sent notification to club topic ${clubTopic}:`, response);
+          } else if (index === 1 && eventData.isCollegeWide) {
+            const collegeTopic = `college_${eventData.collegeId}`;
+            console.log(
+              `Successfully sent notification to college topic ${collegeTopic}:`,
+              response,
+            );
+          } else {
+            console.log(
+              `Successfully sent notifications to ${
+                response.successCount || 'unknown'
+              } subscribed users`,
+            );
+            if (response.failureCount > 0) {
+              console.log(`Failed to send to ${response.failureCount} users:`, response.responses);
+            }
+          }
+        } else {
+          failureCount++;
+          const error = result.reason;
+          errors.push(error);
+
+          // Log specific error details based on notification type
+          if (index === 0) {
+            console.error(`Error sending notification to club topic ${clubTopic}:`, error);
+          } else if (index === 1 && eventData.isCollegeWide) {
+            const collegeTopic = `college_${eventData.collegeId}`;
+            console.error(`Error sending notification to college topic ${collegeTopic}:`, error);
+          } else {
+            console.error('Error sending notifications to subscribed users:', error);
+          }
+        }
+      });
+
+      // Log overall results
+      console.log(`Notification results: ${successCount} successful, ${failureCount} failed`);
+
+      // Only consider it a complete success if all notifications succeeded
+      const allSuccessful = failureCount === 0;
 
       // Log successful operation for debugging
       console.log(
-        `Event notification processed successfully for event ` +
-          `${eventId} (${isCreate ? 'created' : 'updated'})`,
+        `Event notification processed for event ${eventId} (${
+          isCreate ? 'created' : 'updated'
+        }): ` + `${successCount}/${successCount + failureCount} notifications sent successfully`,
       );
 
-      // Store notification record for audit trail
+      // Store notification record for audit trail with accurate status
       await admin
         .firestore()
         .collection('notifications')
@@ -166,14 +182,34 @@ exports.sendEventNotification = functions.firestore
           title: notificationTitle,
           body: notificationBody,
           sentAt: admin.firestore.FieldValue.serverTimestamp(),
+          status: allSuccessful ? 'success' : 'partial_failure',
+          results: {
+            successCount: successCount,
+            failureCount: failureCount,
+            totalAttempts: successCount + failureCount,
+          },
           targets: {
             clubTopic: clubTopic,
             collegeTopic: eventData.isCollegeWide ? `college_${eventData.collegeId}` : null,
             subscribedUsersCount: eventData.subscribedUsers ? eventData.subscribedUsers.length : 0,
           },
+          errors: errors.length > 0 ? errors.map((e) => e.message) : null,
         });
 
-      return true;
+      // If there were any failures, log them for debugging but don't throw
+      if (failureCount > 0) {
+        await admin
+          .firestore()
+          .collection('notification_errors')
+          .add({
+            eventId: context.params.eventId,
+            errors: errors.map((e) => ({ message: e.message, stack: e.stack })),
+            timestamp: admin.firestore.FieldValue.serverTimestamp(),
+            context: 'partial_notification_failure',
+          });
+      }
+
+      return allSuccessful;
     } catch (error) {
       console.error('Error in sendEventNotification function:', error);
 

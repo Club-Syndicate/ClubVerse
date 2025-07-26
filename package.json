@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "build": "next build",
+    "build": "node scripts/inject-firebase-config.js && next build",
+    "build:firebase": "node scripts/inject-firebase-config.js",
     "dev": "next dev",
     "start": "next start"
   },

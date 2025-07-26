@@ -44,9 +44,6 @@ npm test
 # Go back to root directory
 cd ..
 
-# Go back to root directory
-cd ..
-
 # Install Firebase SDK for the main Next.js app
 echo "📦 Installing Firebase SDK for Next.js app..."
 npm install firebase
