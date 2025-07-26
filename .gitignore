@@ -22,6 +22,7 @@ yarn-error.log*
 
 # Firebase generated files (contains sensitive config)
 public/firebase-messaging-sw.js
+firestore-debug.log
 
 # vercel
 .vercel

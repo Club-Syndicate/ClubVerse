@@ -2,7 +2,7 @@ const admin = require('firebase-admin');
 
 // Initialize Firebase Admin (for emulator)
 admin.initializeApp({
-  projectId: process.env.GCLOUD_PROJECT || 'your-project-id',
+  projectId: process.env.GCLOUD_PROJECT || 'demo-project',
   credential: admin.credential.applicationDefault(),
 });
 

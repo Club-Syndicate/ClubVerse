@@ -66,8 +66,7 @@ Scheduled function that runs daily to clean up old notification records.
     title: "🎉 New Event Posted!" | "📅 Event Updated!",
     body: "Event details...",
     icon: "/icons/club-icon.png",
-    badge: "/icons/badge-icon.png",
-    click_action: "https://your-domain.com/events/{eventId}"
+    badge: "/icons/badge-icon.png"
   },
   data: {
     eventId: "string",
@@ -77,7 +76,8 @@ Scheduled function that runs daily to clean up old notification records.
     eventTime: "string",
     location: "string",
     type: "event_notification",
-    timestamp: "string"
+    timestamp: "string",
+    clickUrl: "string"
   }
 }
 ```

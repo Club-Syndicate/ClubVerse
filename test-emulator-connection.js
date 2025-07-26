@@ -8,7 +8,7 @@ const {
 } = require('firebase/firestore');
 
 const firebaseConfig = {
-  projectId: 'your-project-id',
+  projectId: process.env.GCLOUD_PROJECT || 'demo-project',
   // Other config values don't matter for emulator
 };
 

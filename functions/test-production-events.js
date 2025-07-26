@@ -1,5 +1,6 @@
 // Test script to create notifications for production events
 const admin = require('firebase-admin');
+const readline = require('readline');
 
 // Initialize for PRODUCTION (not emulator)
 admin.initializeApp({
@@ -10,7 +11,30 @@ admin.initializeApp({
 
 const db = admin.firestore();
 
+async function confirmProductionExecution() {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout
+  });
+
+  return new Promise((resolve) => {
+    console.log('⚠️  WARNING: This script will execute against PRODUCTION environment!');
+    console.log('📊 This will create test notifications in your production database.');
+    rl.question('Are you sure you want to continue? (yes/no): ', (answer) => {
+      rl.close();
+      resolve(answer.toLowerCase() === 'yes');
+    });
+  });
+}
+
 async function findAndProcessLatestEvent() {
+  // Safety check for production execution
+  const confirmed = await confirmProductionExecution();
+  if (!confirmed) {
+    console.log('❌ Operation cancelled by user. Exiting safely.');
+    process.exit(0);
+  }
+
   console.log('🔍 Looking for events in PRODUCTION Firestore...');
 
   try {

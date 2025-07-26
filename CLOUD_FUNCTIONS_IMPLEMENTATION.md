@@ -131,7 +131,7 @@ public/
     "title": "🎉 New Event Posted!",
     "body": "Check out \"Photography Workshop\" scheduled for Wednesday, February 15, 2024 at 2:00 PM.",
     "icon": "/icons/club-icon.png",
-    "click_action": "https://your-domain.com/events/event-123"
+    "badge": "/icons/badge-icon.png"
   },
   "data": {
     "eventId": "event-123",
@@ -141,7 +141,8 @@ public/
     "eventTime": "2:00 PM",
     "location": "Art Building Room 101",
     "type": "event_notification",
-    "timestamp": "1708012800000"
+    "timestamp": "1708012800000",
+    "clickUrl": "https://your-domain.com/events/event-123"
   }
 }
 ```
