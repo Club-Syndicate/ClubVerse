@@ -208,10 +208,10 @@ exports.sendEventNotification = functions.firestore
           .collection('notification_errors')
           .add({
             eventId: context.params.eventId,
-            errors: errors.map((e) => ({ 
-              message: e.message, 
-              stack: e.stack, 
-              code: e.code 
+            errors: errors.map((e) => ({
+              message: e.message,
+              stack: e.stack,
+              code: e.code,
             })),
             timestamp: admin.firestore.FieldValue.serverTimestamp(),
             context: 'partial_notification_failure',
