@@ -9,6 +9,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
+import { College, CollegeFormData } from '@/types/college';
 
 const collegeSchema = z.object({
   name: z.string().min(1, 'College name is required'),
@@ -16,20 +17,6 @@ const collegeSchema = z.object({
   description: z.string().min(1, 'Description is required'),
   adminName: z.string().min(1, 'Admin name is required'),
 });
-
-type CollegeFormData = z.infer<typeof collegeSchema>;
-
-interface College {
-  id?: string;
-  name: string;
-  location: string;
-  description: string;
-  adminName: string;
-  adminId?: string;
-  clubCount?: number;
-  studentCount?: number;
-  createdAt?: string;
-}
 
 interface CollegeFormModalProps {
   isOpen: boolean;
@@ -56,21 +43,12 @@ export const CollegeFormModal: React.FC<CollegeFormModalProps> = ({
   });
 
   useEffect(() => {
-    if (initialValues) {
-      reset({
-        name: initialValues.name,
-        location: initialValues.location,
-        description: initialValues.description,
-        adminName: initialValues.adminName,
-      });
-    } else {
-      reset({
-        name: '',
-        location: '',
-        description: '',
-        adminName: '',
-      });
-    }
+    reset(initialValues || {
+      name: '',
+      location: '',
+      description: '',
+      adminName: '',
+    });
   }, [initialValues, reset]);
 
   const handleFormSubmit = (data: CollegeFormData) => {

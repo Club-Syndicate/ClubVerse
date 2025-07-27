@@ -34,20 +34,15 @@ import {
   serverTimestamp 
 } from 'firebase/firestore';
 import { CollegeFormModal } from './CollegeFormModal';
-import { Plus, Search, Edit, Trash2, Building2, Users, MapPin, Grid, List } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, Building2, Users, MapPin } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-
-interface College {
-  id: string;
-  name: string;
-  location: string;
-  description: string;
-  adminId: string;
-  adminName: string;
-  clubCount: number;
-  studentCount: number;
-  createdAt: string;
-}
+import { 
+  College, 
+  CollegeFirestoreDoc, 
+  CollegeFormData, 
+  isFirebaseConfigured, 
+  convertFirestoreDocToCollege 
+} from '@/types/college';
 
 export const CollegesTable: React.FC = () => {
   const [colleges, setColleges] = useState<College[]>([]);
@@ -58,18 +53,12 @@ export const CollegesTable: React.FC = () => {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [collegeToDelete, setCollegeToDelete] = useState<College | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [viewMode, setViewMode] = useState<'table' | 'cards'>('table');
   const { toast } = useToast();
 
   // Real-time data fetching from Firestore
   useEffect(() => {
-    // Check if Firebase is properly configured
-    const firebaseConfigured = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID && 
-                              process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID !== 'your_project_id';
-
-    if (!firebaseConfigured) {
+    if (!isFirebaseConfigured()) {
       // Use mock data for development/testing
-      console.log('Firebase not configured, using mock data');
       const mockColleges: College[] = [
         {
           id: 'mock-college-1',
@@ -101,12 +90,10 @@ export const CollegesTable: React.FC = () => {
     const unsubscribe = onSnapshot(
       collection(db, 'colleges'),
       (snapshot) => {
-        const collegesData = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data(),
-        })) as College[];
+        const collegesData = snapshot.docs.map(doc => 
+          convertFirestoreDocToCollege(doc.id, doc.data() as CollegeFirestoreDoc)
+        );
         setColleges(collegesData);
-        console.log('Loaded colleges from Firestore:', collegesData);
       },
       (error) => {
         console.error('Error fetching colleges:', error);
@@ -129,13 +116,10 @@ export const CollegesTable: React.FC = () => {
   );
 
   // Add new college
-  const handleAddCollege = async (data: any) => {
+  const handleAddCollege = async (data: CollegeFormData) => {
     setIsLoading(true);
     try {
-      const firebaseConfigured = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID && 
-                                process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID !== 'your_project_id';
-
-      if (!firebaseConfigured) {
+      if (!isFirebaseConfigured()) {
         // Handle mock data addition
         const newCollege: College = {
           id: `mock-college-${Date.now()}`,
@@ -181,15 +165,12 @@ export const CollegesTable: React.FC = () => {
   };
 
   // Update existing college
-  const handleEditCollege = async (data: any) => {
+  const handleEditCollege = async (data: CollegeFormData) => {
     if (!editingCollege) return;
     
     setIsLoading(true);
     try {
-      const firebaseConfigured = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID && 
-                                process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID !== 'your_project_id';
-
-      if (!firebaseConfigured) {
+      if (!isFirebaseConfigured()) {
         // Handle mock data update
         setColleges(prev => prev.map(college => 
           college.id === editingCollege.id 
@@ -234,17 +215,11 @@ export const CollegesTable: React.FC = () => {
       return;
     }
 
-    console.log('Attempting to delete college:', collegeToDelete);
     setIsLoading(true);
     
     try {
-      // Check if using mock data (for development)
-      const firebaseConfigured = process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID && 
-                                process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID !== 'your_project_id';
-
-      if (!firebaseConfigured) {
+      if (!isFirebaseConfigured()) {
         // Handle mock data deletion
-        console.log('Deleting from mock data');
         setColleges(prev => prev.filter(college => college.id !== collegeToDelete.id));
         
         toast({
@@ -267,7 +242,6 @@ export const CollegesTable: React.FC = () => {
       
       setIsDeleteDialogOpen(false);
       setCollegeToDelete(null);
-      console.log('College deleted successfully');
     } catch (error) {
       console.error('Error deleting college:', error);
       toast({
@@ -288,7 +262,6 @@ export const CollegesTable: React.FC = () => {
 
   // Open delete confirmation
   const openDeleteDialog = (college: College) => {
-    console.log('Opening delete dialog for college:', college);
     setCollegeToDelete(college);
     setIsDeleteDialogOpen(true);
   };
