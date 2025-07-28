@@ -22,6 +22,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Building2, Users, BarChart3, Plus, Search, Edit, Trash2 } from 'lucide-react';
 import { Navbar } from '@/components/navbar';
+import { ClubsTable } from '@/components/college-admin/ClubsTable';
+import { CollegeAdminAnalytics } from '@/components/analytics/CollegeAdminAnalytics';
 
 interface Club {
   id: string;
@@ -211,69 +213,11 @@ export default function CollegeAdminDashboard() {
             <TabsTrigger value="clubs">Clubs Management</TabsTrigger>
             <TabsTrigger value="students">Students Management</TabsTrigger>
             <TabsTrigger value="profile">College Profile</TabsTrigger>
-            <TabsTrigger value="reports">Reports</TabsTrigger>
+            <TabsTrigger value="reports">Analytics & Reports</TabsTrigger>
           </TabsList>
 
           <TabsContent value="clubs" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <div className="relative flex-1 max-w-sm">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  placeholder="Search clubs..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <Dialog open={isAddClubOpen} onOpenChange={setIsAddClubOpen}>
-                <DialogTrigger asChild>
-                  <Button>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add Club
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Add New Club</DialogTitle>
-                    <DialogDescription>Create a new club and assign admin</DialogDescription>
-                  </DialogHeader>
-                  <AddClubForm onSubmit={handleAddClub} />
-                </DialogContent>
-              </Dialog>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-6">
-              {filteredClubs.map((club) => (
-                <Card key={club.id}>
-                  <CardHeader>
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <CardTitle>{club.name}</CardTitle>
-                        <CardDescription>Admin: {club.adminName}</CardDescription>
-                      </div>
-                      <div className="flex space-x-2">
-                        <Button size="sm" variant="outline">
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button size="sm" variant="outline">
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600 mb-4">{club.description}</p>
-                    <div className="flex items-center justify-between text-sm">
-                      <div className="flex items-center">
-                        <Users className="h-4 w-4 mr-1" />
-                        {club.memberCount} members
-                      </div>
-                      <span className="text-gray-500">Created: {club.createdAt}</span>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <ClubsTable collegeId="current-college" />
           </TabsContent>
 
           <TabsContent value="students" className="space-y-6">
