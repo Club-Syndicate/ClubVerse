@@ -31,6 +31,8 @@ import {
   LogOut,
   Crown,
 } from 'lucide-react';
+import { CollegesTable } from '@/components/super-admin/CollegesTable';
+import { SuperAdminAnalytics } from '@/components/analytics/SuperAdminAnalytics';
 
 interface College {
   id: string;
@@ -277,80 +279,7 @@ export default function SuperAdminDashboard() {
           </TabsList>
 
           <TabsContent value="colleges" className="space-y-6">
-            <div className="flex justify-between items-center">
-              <div className="relative flex-1 max-w-sm">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  placeholder="Search colleges..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-              <Dialog open={isAddCollegeOpen} onOpenChange={setIsAddCollegeOpen}>
-                <DialogTrigger asChild>
-                  <Button>
-                    <Plus className="h-4 w-4 mr-2" />
-                    Add College
-                  </Button>
-                </DialogTrigger>
-                <DialogContent>
-                  <DialogHeader>
-                    <DialogTitle>Add New College</DialogTitle>
-                    <DialogDescription>
-                      Create a new college and generate admin credentials
-                    </DialogDescription>
-                  </DialogHeader>
-                  <AddCollegeForm onSubmit={handleAddCollege} />
-                </DialogContent>
-              </Dialog>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-6">
-              {colleges
-                .filter(
-                  (college) =>
-                    college.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    college.location.toLowerCase().includes(searchTerm.toLowerCase()),
-                )
-                .map((college) => (
-                  <Card key={college.id}>
-                    <CardHeader>
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <CardTitle>{college.name}</CardTitle>
-                          <CardDescription>{college.location}</CardDescription>
-                        </div>
-                        <div className="flex space-x-2">
-                          <Button size="sm" variant="outline">
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button size="sm" variant="outline">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    </CardHeader>
-                    <CardContent>
-                      <p className="text-gray-600 mb-4">{college.description}</p>
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <span className="font-medium">Admin:</span> {college.adminName}
-                        </div>
-                        <div>
-                          <span className="font-medium">Clubs:</span> {college.clubCount}
-                        </div>
-                        <div>
-                          <span className="font-medium">Students:</span> {college.studentCount}
-                        </div>
-                        <div>
-                          <span className="font-medium">Created:</span> {college.createdAt}
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                ))}
-            </div>
+            <CollegesTable />
           </TabsContent>
 
           <TabsContent value="clubs" className="space-y-6">
@@ -496,31 +425,7 @@ export default function SuperAdminDashboard() {
           </TabsContent>
 
           <TabsContent value="analytics" className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-6">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Platform Growth</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-gray-600">Analytics dashboard coming soon...</p>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardHeader>
-                  <CardTitle>Recent Activity</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <div className="text-sm">
-                      <span className="font-medium">Tech University</span> added 3 new clubs
-                    </div>
-                    <div className="text-sm">
-                      <span className="font-medium">State College</span> registered 25 new students
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
+            <SuperAdminAnalytics />
           </TabsContent>
         </Tabs>
       </div>
