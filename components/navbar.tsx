@@ -11,6 +11,10 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
   Dialog,
@@ -24,7 +28,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { GraduationCap, ChevronDown, LogIn, UserPlus } from 'lucide-react';
+import { GraduationCap, ChevronDown, LogIn, UserPlus, UserCog } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 export function Navbar() {
@@ -39,7 +43,7 @@ export function Navbar() {
   };
 
   return (
-    <nav className="bg-white shadow-sm border-b">
+    <nav className="w-full fixed top-0 py-0 md:py-2 bg-white shadow-sm border-b z-[5]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between items-center h-16">
           {/* Logo */}
@@ -58,60 +62,148 @@ export function Navbar() {
                 </Button>
               </div>
             ) : (
-              <div className="flex items-center space-x-2">
-                {/* Student Auth Dialog */}
-                <Dialog open={isStudentAuthOpen} onOpenChange={setIsStudentAuthOpen}>
-                  <DialogTrigger asChild>
-                    <Button variant="outline">
-                      <UserPlus className="h-4 w-4 mr-2" />
-                      Student
+              <div>
+                <div className="hidden md:flex items-center space-x-2">
+                  {/* Student Auth Dialog */}
+                  <Dialog open={isStudentAuthOpen} onOpenChange={setIsStudentAuthOpen}>
+                    <DialogTrigger asChild>
+                      <Button variant="outline">
+                        <UserPlus className="h-4 w-4 mr-2" />
+                        Student
+                      </Button>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>Student Access</DialogTitle>
+                        <DialogDescription>Login or register as a student</DialogDescription>
+                      </DialogHeader>
+                      <StudentAuthTabs onClose={() => setIsStudentAuthOpen(false)} />
+                    </DialogContent>
+                  </Dialog>
+
+                  {/* Admin Auth Dialog */}
+                  <Dialog open={isAdminAuthOpen} onOpenChange={setIsAdminAuthOpen}>
+                    <DialogTrigger asChild>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button>
+                            <LogIn className="h-4 w-4 mr-2" />
+                            Admin Login
+                            <ChevronDown className="h-4 w-4 ml-2" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                          <DropdownMenuItem onClick={() => setIsAdminAuthOpen(true)}>
+                            College Admin
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => setIsAdminAuthOpen(true)}>
+                            Club Admin
+                          </DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </DialogTrigger>
+                    <DialogContent className="max-w-md">
+                      <DialogHeader>
+                        <DialogTitle>Admin Login</DialogTitle>
+                        <DialogDescription>Login as College Admin or Club Admin</DialogDescription>
+                      </DialogHeader>
+                      <AdminAuthForm onClose={() => setIsAdminAuthOpen(false)} />
+                    </DialogContent>
+                  </Dialog>
+
+                  {/* Super Admin Link */}
+                  <Link href="/super-admin/login">
+                    <Button variant="ghost" size="sm">
+                      Super Admin
                     </Button>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-md">
-                    <DialogHeader>
-                      <DialogTitle>Student Access</DialogTitle>
-                      <DialogDescription>Login or register as a student</DialogDescription>
-                    </DialogHeader>
-                    <StudentAuthTabs onClose={() => setIsStudentAuthOpen(false)} />
-                  </DialogContent>
-                </Dialog>
+                  </Link>
+                </div>
 
-                {/* Admin Auth Dialog */}
-                <Dialog open={isAdminAuthOpen} onOpenChange={setIsAdminAuthOpen}>
-                  <DialogTrigger asChild>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button>
-                          <LogIn className="h-4 w-4 mr-2" />
-                          Admin Login
-                          <ChevronDown className="h-4 w-4 ml-2" />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent>
-                        <DropdownMenuItem onClick={() => setIsAdminAuthOpen(true)}>
-                          College Admin
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setIsAdminAuthOpen(true)}>
-                          Club Admin
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </DialogTrigger>
-                  <DialogContent className="max-w-md">
-                    <DialogHeader>
-                      <DialogTitle>Admin Login</DialogTitle>
-                      <DialogDescription>Login as College Admin or Club Admin</DialogDescription>
-                    </DialogHeader>
-                    <AdminAuthForm onClose={() => setIsAdminAuthOpen(false)} />
-                  </DialogContent>
-                </Dialog>
+                <div className="flex md:hidden">
+                  <DropdownMenu>
+                    {/* hamberger */}
+                    <DropdownMenuTrigger>
+                      <svg
+                        width="25"
+                        height="25"
+                        viewBox="0 0 15 15"
+                        fill="none"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
+                        <path
+                          d="M1.5 3C1.22386 3 1 3.22386 1 3.5C1 3.77614 1.22386 4 1.5 4H13.5C13.7761 4 14 3.77614 14 3.5C14 3.22386 13.7761 3 13.5 3H1.5ZM1 7.5C1 7.22386 1.22386 7 1.5 7H13.5C13.7761 7 14 7.22386 14 7.5C14 7.77614 13.7761 8 13.5 8H1.5C1.22386 8 1 7.77614 1 7.5ZM1 11.5C1 11.2239 1.22386 11 1.5 11H13.5C13.7761 11 14 11.2239 14 11.5C14 11.7761 13.7761 12 13.5 12H1.5C1.22386 12 1 11.7761 1 11.5Z"
+                          fill="currentColor"
+                          fillRule="evenodd"
+                          clipRule="evenodd"
+                        ></path>
+                      </svg>
+                    </DropdownMenuTrigger>
 
-                {/* Super Admin Link */}
-                <Link href="/super-admin/login">
-                  <Button variant="ghost" size="sm">
-                    Super Admin
-                  </Button>
-                </Link>
+                    <DropdownMenuContent>
+                      <Dialog open={isStudentAuthOpen} onOpenChange={setIsStudentAuthOpen}>
+                        <DialogTrigger asChild>
+                          <DropdownMenuItem>
+                            <Button variant="ghost">
+                              <UserPlus className="h-4 w-4 mr-2" />
+                              Student
+                            </Button>
+                          </DropdownMenuItem>
+                        </DialogTrigger>
+                        <DialogContent className="max-w-md">
+                          <DialogHeader>
+                            <DialogTitle>Student Access</DialogTitle>
+                            <DialogDescription>Login or register as a student</DialogDescription>
+                          </DialogHeader>
+                          <StudentAuthTabs onClose={() => setIsStudentAuthOpen(false)} />
+                        </DialogContent>
+                      </Dialog>
+                      <DropdownMenuSeparator />
+
+                      <DropdownMenuSub>
+                        <Dialog open={isAdminAuthOpen} onOpenChange={setIsAdminAuthOpen}>
+                          <DialogTrigger asChild>
+                            <DropdownMenuSub>
+                              <DropdownMenuSubTrigger className="text-md">
+                                <Button variant="ghost">
+                                  <LogIn className="h-4 w-4 mr-2" />
+                                  Admin Login
+                                </Button>
+                              </DropdownMenuSubTrigger>
+                              <DropdownMenuSubContent>
+                                <DropdownMenuItem onClick={() => setIsAdminAuthOpen(true)}>
+                                  College Admin
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setIsAdminAuthOpen(true)}>
+                                  Club Admin
+                                </DropdownMenuItem>
+                              </DropdownMenuSubContent>
+                            </DropdownMenuSub>
+                          </DialogTrigger>
+                          <DialogContent className="max-w-md">
+                            <DialogHeader>
+                              <DialogTitle>Admin Login</DialogTitle>
+                              <DialogDescription>
+                                Login as College Admin or Club Admin
+                              </DialogDescription>
+                            </DialogHeader>
+                            <AdminAuthForm onClose={() => setIsAdminAuthOpen(false)} />
+                          </DialogContent>
+                        </Dialog>
+                      </DropdownMenuSub>
+
+                      <DropdownMenuSeparator />
+
+                      <DropdownMenuItem className="text-md">
+                        <Link href="/super-admin/login">
+                          <Button variant="ghost">
+                            <UserCog />
+                            Super Admin
+                          </Button>
+                        </Link>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
               </div>
             )}
           </div>
