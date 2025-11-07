@@ -19,6 +19,11 @@ yarn-error.log*
 
 # env files
 .env*
+!.env.example
+
+# Firebase generated files (contains sensitive config)
+public/firebase-messaging-sw.js
+firestore-debug.log
 
 # vercel
 .vercel
